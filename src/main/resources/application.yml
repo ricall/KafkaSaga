@@ -1,0 +1,42 @@
+server:
+  port: 8181
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/messages
+    username: admin
+    password: password
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+  kafka:
+    bootstrap-servers: localhost:9092
+    client-id: saga-application
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      properties:
+        spring.json.trusted.packages: "*"
+
+kafka:
+  partitions: 12
+  topics:
+    message: dev.message
+    messageEvent: dev.message.event.internal
+
+logging:
+  level:
+    # Hide all kafka partition/topic info messages
+    org.apache.kafka.clients: WARN
+    # Disable JMX registration warning (Kafka jmx doesn't like you reusing client-ids for multiple listeners)
+    org.apache.kafka.common.utils.AppInfoParser: ERROR
+    # Hide AdminConfig values (Set to INFO to see the admin properties)
+    org.apache.kafka.clients.admin.AdminClientConfig: WARN
+    # Hide ConsumerConfig values (set to INFO to see the config properties)
+    org.apache.kafka.clients.consumer.ConsumerConfig: WARN
+    # Hide ProducerConfig values (set to INFO to see the config properties)
+    org.apache.kafka.clients.producer.ProducerConfig: WARN
