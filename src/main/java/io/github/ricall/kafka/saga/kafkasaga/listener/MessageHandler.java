@@ -46,7 +46,7 @@ public class MessageHandler {
 
     @KafkaListener(
             topics = "${kafka.topics.message}",
-            groupId = "message.listener",
+            groupId = "message-handler",
             containerFactory = "jsonListenerFactory"
     )
     public void onMessage(@Header(KafkaHeaders.CORRELATION_ID) String correlationId, Message message) {

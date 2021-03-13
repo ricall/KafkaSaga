@@ -58,7 +58,7 @@ public class MessageEventHandler {
 
     @KafkaListener(
             topics = "${kafka.topics.messageEvent}",
-            groupId = "event.handler",
+            groupId = "event-handler",
             containerFactory = "jsonListenerFactory"
     )
     public void onMessageEvent(@Payload MessageEvent event) {

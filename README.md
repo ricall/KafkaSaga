@@ -65,6 +65,32 @@ work to the `ProcessingCompleteAction` class
 18. The `ProcessingCompleteAction` class returns a new MessageEvent with a status of PROCESSED
 19. `MessageEventHandler` writes a tombstone record into `dev.message.event.internal`
 
+#### Message processing
+There are three main parts to the microservice:
+* `MesageController` REST interface - Provides the controller that receives messages and puts them on the `dev.message` topic
+* `MessageHandler` Reads the message off the `dev.message` topic, write it to the DB and triggers a PERSISTED
+  event on `dev.message.event.internal` topic
+* `MessageEventHandler` Listens to message events and implements a simple state machine to process the messages
+
+```text
+saga1_1      | 2021-03-13 12:57:30.556  INFO 6 --- [a-application-1] i.g.r.k.s.k.c.MessageController          : Message Sent: 744259f2-0759-49b6-985f-77948e94096e
+saga3_1      | 2021-03-13 12:57:30.556  INFO 6 --- [ntainer#2-1-C-1] i.g.r.k.s.k.listener.MessageHandler      : Received message Message(id=null, source=source, destination=destination1, message=sample message) [744259f2-0759-49b6-985f-77948e94096e]
+saga3_1      | 2021-03-13 12:57:30.563  INFO 6 --- [ntainer#2-1-C-1] i.g.r.k.s.k.listener.MessageHandler      :   Wrote message: [744259f2-0759-49b6-985f-77948e94096e]
+saga4_1      | 2021-03-13 12:57:30.566  INFO 7 --- [ntainer#1-1-C-1] i.g.r.k.s.k.s.a.StandardiseMessageAction :   PERSISTED -> Standardising message: [744259f2-0759-49b6-985f-77948e94096e]
+saga4_1      | 2021-03-13 12:57:33.322  INFO 7 --- [ntainer#1-1-C-1] i.g.r.k.s.k.s.a.PropagateMessageAction   :   STANDARDISED -> Propagating message: [744259f2-0759-49b6-985f-77948e94096e]
+saga4_1      | 2021-03-13 12:57:36.279  INFO 7 --- [ntainer#1-1-C-1] i.g.r.k.s.k.s.a.ProcessingCompleteAction :   PROPAGATED -> Processing finished: [744259f2-0759-49b6-985f-77948e94096e]
+```
+Here we can see from the log that the REST interface received a message on `INSTANCE 1`.
+The Message was received on `INSTANCE 3` and was written to the database and a `PERSISTED` event was triggered
+The Saga processor listened to the events on the `dev.message.event.internal` processing each event and triggering state changes
+on `INSTANCE 4`
+
+*The instance that processes the message is determined by the way the broker has allocated partitions and the
+way the correlation id is mapped to partitions.*
+
+NOTE: The MessageController is listening to a reactive stream of `MessageEvent` objects from the `dev.message.event.internal`
+topic - when it reaches `STANDARDISED` state the MessageController returns the `StandardisedMessage` associated with the event.
+
 #### Saga State Machine
 The saga is represented as a simple state machine where message events are sent to Actions that process
 them and return a new message event with a potentially different state.
@@ -119,8 +145,8 @@ make run
 
 ### Start Application Instances (different terminal for each command)
 ```bash
-INSTANCE_ID=1 && java -jar build/libs/KafkaSaga-0.0.1-SNAPSHOT.jar --server.port=8181
-INSTANCE_ID=2 && java -jar build/libs/KafkaSaga-0.0.1-SNAPSHOT.jar --server.port=8182
-INSTANCE_ID=3 && java -jar build/libs/KafkaSaga-0.0.1-SNAPSHOT.jar --server.port=8183
-INSTANCE_ID=4 && java -jar build/libs/KafkaSaga-0.0.1-SNAPSHOT.jar --server.port=8184
+export INSTANCE_ID=one && java -jar build/libs/KafkaSaga-0.0.1-SNAPSHOT.jar --server.port=8181
+export INSTANCE_ID=two && java -jar build/libs/KafkaSaga-0.0.1-SNAPSHOT.jar --server.port=8182
+export INSTANCE_ID=three && java -jar build/libs/KafkaSaga-0.0.1-SNAPSHOT.jar --server.port=8183
+export INSTANCE_ID=four && java -jar build/libs/KafkaSaga-0.0.1-SNAPSHOT.jar --server.port=8184
 ```

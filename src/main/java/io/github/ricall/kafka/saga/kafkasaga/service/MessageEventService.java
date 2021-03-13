@@ -70,7 +70,7 @@ public class MessageEventService {
 
     @KafkaListener(
             topics = "${kafka.topics.messageEvent}",
-            groupId = "event.service${INSTANCE_ID:1}",
+            groupId = "event-service-#{systemEnvironment['INSTANCE_ID'] ?: 'develop'}",
             topicPartitions = @TopicPartition(
                     topic = "${kafka.topics.messageEvent}",
                     partitions = "0-#{${kafka.partitions}-1}",
