@@ -72,8 +72,8 @@ public class MessageController {
                 .next();
     }
 
-    private Mono<ResponseEntity<StandardisedMessage>> loadStandardisedMessage(MessageEvent stateChange) {
-        StandardisedMessage standardisedMessage = service.getStandardisedMessage(stateChange.getMessageId());
+    private Mono<ResponseEntity<StandardisedMessage>> loadStandardisedMessage(MessageEvent event) {
+        StandardisedMessage standardisedMessage = service.getStandardisedMessage(event.getMessageId());
 
         return Mono.just(ResponseEntity.ok(standardisedMessage));
     }

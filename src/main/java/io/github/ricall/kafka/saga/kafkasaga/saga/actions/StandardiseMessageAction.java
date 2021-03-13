@@ -51,7 +51,7 @@ public class StandardiseMessageAction implements SagaAction {
     }
 
     @Override
-    public MessageEvent processStateChange(MessageEvent event) {
+    public MessageEvent processEvent(MessageEvent event) {
         log.info("  {} -> Standardising message: [{}]", event.getState(), event.getCorrelationId());
         Message message = service.getMessage(event.getMessageId());
         StandardisedMessage standardisedMessage = StandardisedMessage.builder()

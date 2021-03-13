@@ -43,7 +43,7 @@ public class PropagateMessageAction implements SagaAction {
     }
 
     @Override
-    public MessageEvent processStateChange(MessageEvent event) {
+    public MessageEvent processEvent(MessageEvent event) {
         log.info("  {} -> Propagating message: [{}]", event.getState(), event.getCorrelationId());
 
         // Dummy message propagation delay

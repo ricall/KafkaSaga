@@ -69,7 +69,7 @@ public class MessageEventHandler {
             log.warn("Unsupported state change: {}", event);
             nextEvent = event.toState(PROCESSED);
         } else {
-            nextEvent = action.processStateChange(event);
+            nextEvent = action.processEvent(event);
         }
         stateService.saveEvent(nextEvent).block();
     }

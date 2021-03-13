@@ -30,6 +30,6 @@ public interface SagaAction {
 
     MessageState handlesState();
 
-    MessageEvent processStateChange(MessageEvent stateChange);
+    MessageEvent processEvent(MessageEvent event);
 
 }

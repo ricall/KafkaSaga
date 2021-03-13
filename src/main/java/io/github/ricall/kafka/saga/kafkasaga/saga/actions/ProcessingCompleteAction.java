@@ -42,7 +42,7 @@ public class ProcessingCompleteAction implements SagaAction {
     }
 
     @Override
-    public MessageEvent processStateChange(MessageEvent event) {
+    public MessageEvent processEvent(MessageEvent event) {
         log.info("  {} -> Processing finished: [{}]", event.getState(), event.getCorrelationId());
 
         // Perform any cleanup
