@@ -23,13 +23,16 @@
 
 package io.github.ricall.kafka.saga.kafkasaga.listener;
 
+import io.github.ricall.kafka.saga.kafkasaga.Kafka.AsyncAcknowledge;
 import io.github.ricall.kafka.saga.kafkasaga.model.Message;
 import io.github.ricall.kafka.saga.kafkasaga.model.MessageEvent;
 import io.github.ricall.kafka.saga.kafkasaga.service.MessageService;
 import io.github.ricall.kafka.saga.kafkasaga.service.MessageEventService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
@@ -49,7 +52,7 @@ public class MessageHandler {
             groupId = "message-handler",
             containerFactory = "jsonListenerFactory"
     )
-    public void onMessage(@Header(KafkaHeaders.CORRELATION_ID) String correlationId, Message message) {
+    public void onMessage(@Header(KafkaHeaders.CORRELATION_ID) String correlationId, Message message, Acknowledgment ack) {
         log.info("Received message {} [{}]", message, correlationId);
 
         message = service.saveMessage(correlationId, message);
@@ -60,6 +63,7 @@ public class MessageHandler {
                 .messageId(message.getId())
                 .state(PERSISTED)
                 .build()).block();
+        ack.acknowledge();
     }
 
 }

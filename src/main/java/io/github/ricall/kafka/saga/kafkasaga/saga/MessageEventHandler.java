@@ -29,6 +29,7 @@ import io.github.ricall.kafka.saga.kafkasaga.service.MessageEventService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
@@ -61,7 +62,7 @@ public class MessageEventHandler {
             groupId = "event-handler",
             containerFactory = "jsonListenerFactory"
     )
-    public void onMessageEvent(@Payload MessageEvent event) {
+    public void onMessageEvent(@Payload MessageEvent event, Acknowledgment ack) {
         SagaAction action = actions.get(event.getState());
 
         MessageEvent nextEvent;
@@ -72,6 +73,7 @@ public class MessageEventHandler {
             nextEvent = action.processEvent(event);
         }
         stateService.saveEvent(nextEvent).block();
+        ack.acknowledge();
     }
 
 }

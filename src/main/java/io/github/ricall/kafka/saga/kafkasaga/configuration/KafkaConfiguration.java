@@ -39,6 +39,7 @@ import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
+import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 
 import java.util.Map;
@@ -71,7 +72,6 @@ public class KafkaConfiguration {
         Map<String, Object> properties = props.buildConsumerProperties();
         properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
-
         return new DefaultKafkaConsumerFactory<>(properties);
     }
 
@@ -81,6 +81,7 @@ public class KafkaConfiguration {
         factory.setConsumerFactory(jsonConsumer(null));
         factory.setRecordFilterStrategy(this::ignoreTombstoneRecords);
         factory.setConcurrency(3);
+        factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL);
 
         return factory;
     }
